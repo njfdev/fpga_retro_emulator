@@ -1,19 +1,37 @@
 #include "output.h"
 #include <cstddef>
+#include <cstdint>
 #include <cstdlib>
+#include <limits>
 #include <stdexcept>
 
-const float SQUARE_WAVE_FREQUENCY = 440.0;
+#define WAVE_FREQUENCY 220.0
+#define VOLUME 0.4
+constexpr int16_t VOLUME16 = static_cast<int16_t>((std::numeric_limits<int16_t>::max())*VOLUME);
 
 int totalFrames = 0;
 void audioCallback(ma_device* pDevice, void* pOutput, const void* pInput, ma_uint32 frameCount) {
   ma_int16* output = static_cast<ma_int16*>(pOutput);
 
   uint32_t channels = pDevice->playback.channels;
+  uint32_t sampleRate = pDevice->sampleRate;
 
   for (int i = 0; i < frameCount*channels; i += channels) {
     for (int channel = 0; channel < channels; channel++) {
-      output[i+channel] = (totalFrames%(int16_t)(44100/SQUARE_WAVE_FREQUENCY)) > 44100/(SQUARE_WAVE_FREQUENCY*2) ? 5000 : -5000;
+      uint16_t framesPerPeriod = sampleRate/WAVE_FREQUENCY;
+      float fractionOfPeriod = (totalFrames%framesPerPeriod)/static_cast<float>(framesPerPeriod);
+
+      // SQUARE WAVE
+      // output[i+channel] =  fractionOfPeriod < 0.5 ? -VOLUME16 : VOLUME16;
+
+      // TRIANGLE WAVE
+      output[i+channel] = fractionOfPeriod < 0.5 ? -VOLUME16+(fractionOfPeriod*4.0*VOLUME16) : VOLUME16-((fractionOfPeriod-0.5)*4.0*VOLUME16);
+
+      // SAWTOOTH WAVE
+      // output[i+channel] = VOLUME16-(fractionOfPeriod*2.0*VOLUME16);
+
+      // WHITE NOISE
+      // output[i+channel] = (((rand()%10000)/10000.0)-0.5)*2.0*VOLUME16;
     }
     totalFrames++;
   }
