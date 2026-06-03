@@ -15,9 +15,17 @@ endif()
 
 find_package(verilator)
 
-add_executable(sim
-    sim/main.cpp
+# find the source directories
+file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS
+    "sim/main.cpp"
+    "software/*.cpp"
 )
+
+add_executable(sim
+    ${SRC_FILES}
+)
+
+target_include_directories(sim PRIVATE sim software)
 
 verilate(sim
     SOURCES rtl/nes_top.sv
