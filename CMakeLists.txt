@@ -17,9 +17,15 @@ find_package(verilator)
 
 # find the source directories
 file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS
-    "sim/main.cpp"
+    "sim/*.cpp"
     "software/*.cpp"
 )
+
+# remove rtl_out files already included by verilate
+file(GLOB_RECURSE EXCLUDED_SRC_FILES CONFIGURE_DEPENDS
+    "sim/rtl_out/*"
+)
+list(REMOVE_ITEM SRC_FILES ${EXCLUDED_SRC_FILES})
 
 add_executable(sim
     ${SRC_FILES}

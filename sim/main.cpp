@@ -1,3 +1,4 @@
+#include "audio/output.h"
 #include "rtl_out/Vnes_top.h"
 #include "nes/2a03/apu.h"
 #include <chrono>
@@ -7,6 +8,7 @@
 int main() {
   Vnes_top top;
   NES_2A03::APU apu;
+  AudioOutput output;
 
   while (true) {
     top.wire_in = !top.wire_in;
